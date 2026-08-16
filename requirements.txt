@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+jinja2
+psutil
+pyautogui
+screen-brightness-control
+pycaw
+comtypes

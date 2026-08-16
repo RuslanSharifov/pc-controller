@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="az">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f5ebe0" />
+    <link rel="stylesheet" href="../static/style.css" />
+    <title>PC Control</title>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- TOP -->
+      <header class="topbar">
+        <div class="logo-box">
+          <b>PC</b>
+        </div>
+        <div class="brand">
+          <h1>Pc Control</h1>
+          <div class="live-badge">LIVE</div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric-card">
+            <div class="label">CPU</div>
+            <div class="value" id="cpu">--%</div>
+            <div class="metric-bar"><i id="cpuBar"></i></div>
+          </div>
+          <div class="metric-card">
+            <div class="label">RAM</div>
+            <div class="value" id="ram">--%</div>
+            <div class="metric-bar"><i id="ramBar"></i></div>
+          </div>
+        </div>
+
+        <button
+          class="power-btn"
+          onclick="confirmPower('shutdown')"
+          title="Shutdown"
+        >
+          ⏻
+          <span>shutdown</span>
+        </button>
+      </header>
+
+      <!-- MAIN -->
+      <div class="main">
+        <!-- APPS 3x3 -->
+        <div class="apps-panel" id="appsPanel">
+          <!-- JavaScript dinamik olaraq maksimum 9 tətbiqi buraya yükləyəcək -->
+        </div>
+
+        <!-- SPOTIFY -->
+        <div class="spotify-card">
+          <div class="cover-wrap">
+            <img id="coverImg" alt="cover" />
+            <div class="cover-fallback" id="coverFallback">♫</div>
+          </div>
+          <div class="track-info">
+            <div class="track-title" id="trackTitle">No media</div>
+            <div class="track-artist" id="trackArtist">Offline</div>
+          </div>
+          <div class="media-controls">
+            <button onclick="sendCommand('/api/media/prev')" title="Previous">
+              ⏮
+            </button>
+            <button
+              class="play-btn"
+              id="playBtn"
+              onclick="sendCommand('/api/media/playpause')"
+              title="Play/Pause"
+            >
+              ▶
+            </button>
+            <button onclick="sendCommand('/api/media/next')" title="Next">
+              ⏭
+            </button>
+          </div>
+        </div>
+
+        <!-- SLIDERS -->
+        <div class="sliders">
+          <div class="slider-card brightness">
+            <div class="slider-btns">
+              <button onclick="sendCommand('/api/brightness/up')">+</button>
+              <button onclick="sendCommand('/api/brightness/down')">−</button>
+            </div>
+            <div class="slider-track">
+              <div class="slider-fill" id="brightnessBar"></div>
+            </div>
+            <div class="slider-icon">☀</div>
+          </div>
+          <div class="slider-card volume">
+            <div class="slider-btns">
+              <button onclick="sendCommand('/api/volume/up')">+</button>
+              <button onclick="sendCommand('/api/volume/down')">−</button>
+            </div>
+            <div class="slider-track">
+              <div class="slider-fill" id="volumeBar"></div>
+            </div>
+            <div class="slider-icon">🔊</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM -->
+      <footer class="bottombar">
+        <button onclick="sendCommand('/api/lock')">
+          <div class="ico">🔒</div>
+          Lock
+        </button>
+        <button onclick="confirmPower('sleep')">
+          <div class="ico">☾</div>
+          Sleep
+        </button>
+        <button onclick="sendCommand('/api/closewindow')">
+          <div class="ico">✕</div>
+          Close
+        </button>
+        <button onclick="sendCommand('/api/showdesktop')">
+          <div class="ico">⌂</div>
+          Desktop
+        </button>
+        <button onclick="sendCommand('/api/alttab')">
+          <div class="ico">⇄</div>
+          Switch
+        </button>
+        <button id="fullscreenBtn">
+          <div class="ico">⛶</div>
+          Full
+        </button>
+        <button onclick="confirmPower('restart')">
+          <div class="ico">↻</div>
+          Restart
+        </button>
+        <button onclick="openInfoModal()">
+          <div class="ico">ℹ</div>
+          Info
+        </button>
+      </footer>
+    </div>
+
+    <!-- CONFIRM POWER MODAL -->
+    <div id="modal" class="modal hidden">
+      <div class="modal-card">
+        <h3 id="modalTitle">Confirm</h3>
+        <p id="modalText">Are you sure?</p>
+        <div class="modal-actions">
+          <button class="cancel" id="cancelBtn">Cancel</button>
+          <button class="confirm" id="confirmBtn">Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO & SETTINGS MODAL -->
+    <div id="infoModal" class="info-modal-backdrop hidden">
+      <div class="info-modal-card">
+        <button class="info-close-btn" onclick="closeInfoModal()">✕</button>
+        <div class="info-sidebar">
+          <button
+            class="info-tab-btn active"
+            onclick="switchInfoTab('github', event)"
+          >
+            <span class="tab-icon">🐙</span> GitHub
+          </button>
+          <button
+            class="info-tab-btn"
+            onclick="switchInfoTab('settings', event)"
+          >
+            <span class="tab-icon">⚙</span> Settings
+          </button>
+          <button class="info-tab-btn" onclick="switchInfoTab('readme', event)">
+            <span class="tab-icon">📄</span> ReadMe
+          </button>
+        </div>
+        <div class="info-content">
+          <!-- TAB: GITHUB -->
+          <div id="tab-github" class="tab-pane active">
+            <h3>GitHub Details</h3>
+            <div class="github-section">
+              <div class="gh-card">
+                <h4>Creator Profile</h4>
+                <div class="gh-profile">
+                  <img
+                    id="ghAvatar"
+                    src="https://github.com/identicons/ruaaln.png"
+                    alt="Avatar"
+                  />
+                  <div>
+                    <b id="ghName">Ruaaln</b>
+                    <p id="ghBio">Full-stack Developer</p>
+                    <span class="gh-badge" id="ghFollowers">Followers: --</span>
+                  </div>
+                </div>
+                <a
+                  id="ghProfileLink"
+                  href="https://github.com/Ruaaln"
+                  target="_blank"
+                  class="gh-btn"
+                  >Open Profile ↗</a
+                >
+              </div>
+
+              <div class="gh-card">
+                <h4>Repository</h4>
+                <div class="repo-details">
+                  <b id="repoName">pc-controller</b>
+                  <p id="repoDesc">FastAPI & Web Remote PC Control System</p>
+                  <div class="repo-stats">
+                    <span>⭐ Stars: <strong id="repoStars">0</strong></span>
+                    <span>🍴 Forks: <strong id="repoForks">0</strong></span>
+                  </div>
+                </div>
+                <a
+                  id="repoLink"
+                  href="https://github.com/Ruaaln/pc-controller"
+                  target="_blank"
+                  class="gh-btn secondary"
+                  >Open Repo ↗</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: SETTINGS -->
+          <div id="tab-settings" class="tab-pane">
+            <h3>Settings</h3>
+            <div class="settings-group">
+              <div class="setting-item">
+                <span>Theme Mode</span>
+                <button
+                  class="theme-toggle-btn"
+                  id="themeToggleBtn"
+                  onclick="toggleTheme()"
+                >
+                  🌙 Dark Mode
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="setting-title-wrap">
+                <h4>Select Active Apps (Max 9)</h4>
+                <span id="appCountBadge" class="app-count-badge">0/9</span>
+              </div>
+              <div class="app-selection-grid" id="appSelectionGrid">
+                <!-- Dynamic app checkboxes -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: README -->
+          <div id="tab-readme" class="tab-pane">
+            <h3>Project README</h3>
+            <div class="readme-box" id="readmeContent">
+              <h4>🖥️ PC Controller Remote Interface</h4>
+              <p>
+                Bu sistem mobil telefonunuz üzərindən kompyuterinizi məsafədən
+                idarə etmək üçün tərtib edilmişdir.
+              </p>
+              <hr />
+              <b>Əsas xüsusiyyətlər:</b>
+              <ul>
+                <li>
+                  <b>Sistem Resursları:</b> CPU və RAM istifadəsinin canlı
+                  izlənməsi.
+                </li>
+                <li>
+                  <b>Media Nəzarəti:</b> Windows Media / Spotify inteqrasiyası
+                  və Albom Cover Art dəstəyi.
+                </li>
+                <li>
+                  <b>Səs və Parlaqlıq:</b> Şaquli və üfüqi interaktiv
+                  slayderlər.
+                </li>
+                <li>
+                  <b>Tətbiq Menyusu:</b> 9 istənilən tətbiqin tənzimlənməsi
+                  (WhatsApp, Telegram, CapCut və s.).
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast">
+      <span id="toastIcon">✓</span>
+      <span id="toastText">Done</span>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
