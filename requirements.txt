@@ -6,3 +6,8 @@ pyautogui
 screen-brightness-control
 pycaw
 comtypes
+pywebview
+pystray
+Pillow
+qrcode[pil]
+pyinstaller

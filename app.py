@@ -512,6 +512,11 @@ def sleep():
     return {"ok": True}
 
 
+# Pairing and permission middleware is installed for every supported launch path.
+from remote_access import install_remote_access
+install_remote_access(app)
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=9050, reload=False)
