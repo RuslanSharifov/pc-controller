@@ -51,13 +51,24 @@ Open `http://127.0.0.1:9050/static/desktop.html` on the PC to:
 
 Only explicitly enabled remote actions are accepted by the API. New high-impact actions are disabled by default.
 
-## Build a Windows executable
+## Build and install on Windows
+
+The GitHub Actions workflow builds both a portable executable and an Inno Setup installer.
+
+For a local build:
 
 ```powershell
+pip install -r requirements.txt
 pyinstaller --noconfirm gui_launcher.spec
+choco install innosetup --yes
+& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer/PCController.iss
 ```
 
-The output is written to `dist/PCController.exe`. A signed installer and automatic uninstall cleanup still need to be added before a public production release.
+Outputs:
+- Portable app: `dist/PCController.exe`
+- Installer: `dist/installer/PCController-Setup.exe`
+
+The installer adds Start Menu shortcuts, optionally creates a desktop shortcut and can start the tray agent at Windows sign-in. Uninstall removes the application and its local pairing data. The installer is currently unsigned; Windows SmartScreen may show a warning until a code-signing certificate is configured.
 
 ## Network and security
 
