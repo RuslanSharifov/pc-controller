@@ -56,13 +56,30 @@ const ALL_AVAILABLE_APPS = [
 let selectedAppIds = JSON.parse(localStorage.getItem("pc_selected_apps")) || [
     "chrome", "cmd", "vscode", "vs", "settings", "spotify", "explorer", "windows", "powershell"
 ];
+let allowedAppIds = [];
+
+async function loadCapabilities() {
+    try {
+        const res = await fetch("/api/capabilities", { cache: "no-store" });
+        if (!res.ok) throw new Error("Could not load desktop permissions");
+        const data = await res.json();
+        allowedAppIds = Array.isArray(data.apps) ? data.apps : [];
+        selectedAppIds = selectedAppIds.filter(id => allowedAppIds.includes(id));
+        if (selectedAppIds.length === 0) selectedAppIds = allowedAppIds.slice(0, 9);
+        localStorage.setItem("pc_selected_apps", JSON.stringify(selectedAppIds));
+    } catch (err) {
+        console.error("Capabilities error:", err);
+        allowedAppIds = [];
+        selectedAppIds = [];
+    }
+}
 
 function renderAppsPanel() {
     const appsPanel = document.getElementById("appsPanel");
     if (!appsPanel) return;
     
     appsPanel.innerHTML = "";
-    const activeApps = ALL_AVAILABLE_APPS.filter(a => selectedAppIds.includes(a.id)).slice(0, 9);
+    const activeApps = ALL_AVAILABLE_APPS.filter(a => allowedAppIds.includes(a.id) && selectedAppIds.includes(a.id)).slice(0, 9);
     
     activeApps.forEach(app => {
         const btn = document.createElement("button");
@@ -81,7 +98,7 @@ function renderAppSelectionGrid() {
     appSelectionGrid.innerHTML = "";
     if (appCountBadge) appCountBadge.textContent = `${selectedAppIds.length}/9`;
 
-    ALL_AVAILABLE_APPS.forEach(app => {
+    ALL_AVAILABLE_APPS.filter(app => allowedAppIds.includes(app.id)).forEach(app => {
         const isChecked = selectedAppIds.includes(app.id);
         const label = document.createElement("label");
         label.className = "app-checkbox-label";
@@ -165,8 +182,8 @@ function switchInfoTab(tabName, btnEvent) {
 
 async function fetchGitHubData() {
     try {
-        // Profil Dataları (Ruaaln)
-        const userRes = await fetch("https://api.github.com/users/Ruaaln");
+        // Profil Dataları (RuslanSharifov)
+        const userRes = await fetch("https://api.github.com/users/RuslanSharifov");
         if (userRes.ok) {
             const user = await userRes.json();
             document.getElementById("ghAvatar").src = user.avatar_url;
@@ -176,7 +193,7 @@ async function fetchGitHubData() {
         }
 
         // Repo Dataları (pc-controller)
-        const repoRes = await fetch("https://api.github.com/repos/Ruaaln/pc-controller");
+        const repoRes = await fetch("https://api.github.com/repos/RuslanSharifov/pc-controller");
         if (repoRes.ok) {
             const repo = await repoRes.json();
             document.getElementById("repoName").textContent = repo.name;
@@ -372,8 +389,9 @@ document.addEventListener("touchend", (e) => {
 /* =========================================================
    START
 ========================================================= */
-function init() {
+async function init() {
     initTheme();
+    await loadCapabilities();
     renderAppsPanel();
     renderAppSelectionGrid();
     updateStatus();

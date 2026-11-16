@@ -1,0 +1,51 @@
+name: Windows Desktop Build
+
+on:
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "*.py"
+      - "static/**"
+      - "templates/**"
+      - "requirements.txt"
+      - "gui_launcher.spec"
+      - "installer/**"
+      - ".github/workflows/windows-desktop.yml"
+  pull_request:
+    paths:
+      - "*.py"
+      - "static/**"
+      - "templates/**"
+      - "requirements.txt"
+      - "gui_launcher.spec"
+      - "installer/**"
+      - ".github/workflows/windows-desktop.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Validate Python syntax
+        run: python -m compileall -q app.py remote_access.py desktop_agent.py
+      - name: Build portable desktop executable
+        run: pyinstaller --noconfirm gui_launcher.spec
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Build Windows installer
+        shell: pwsh
+        run: '& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer/PCController.iss'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pc-controller-windows-builds
+          path: |
+            dist/PCController.exe
+            dist/installer/PCController-Setup.exe
+          if-no-files-found: error

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1220"><title>Connect · PC Controller</title>
+<style>*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b1220;color:#e5e7eb;font-family:system-ui;display:grid;place-items:center;padding:20px}.card{width:min(100%,420px);background:#111c2e;border:1px solid #26364d;border-radius:22px;padding:24px}h1{margin:0 0 6px}p{color:#94a3b8;line-height:1.5}label{display:block;margin:16px 0 6px;font-size:13px;color:#cbd5e1}input{width:100%;padding:13px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:white;font-size:16px}button{width:100%;padding:14px;margin-top:18px;border:0;border-radius:11px;background:#2563eb;color:white;font-size:16px;font-weight:700}#message{min-height:22px;color:#fca5a5;font-size:13px}</style></head>
+<body><main class="card"><h1>Connect to your PC</h1><p>Connect your phone to the same Wi-Fi network, then enter the address and one-time code shown in the PC Controller tray menu.</p>
+<label for="host">PC address</label><input id="host" placeholder="http://192.168.1.10:9050" autocomplete="url">
+<label for="code">6-digit pairing code</label><input id="code" inputmode="numeric" maxlength="6" placeholder="123456">
+<label for="name">Device name</label><input id="name" value="My phone" maxlength="64">
+<button id="connect">Pair this device</button><div id="message"></div></main>
+<script>
+const params=new URLSearchParams(location.search);if(params.get('host'))document.querySelector('#host').value='http://'+params.get('host')+':'+(params.get('port')||'9050');if(params.get('code'))document.querySelector('#code').value=params.get('code');
+document.querySelector('#connect').onclick=async()=>{const host=document.querySelector('#host').value.trim().replace(/\/$/,'');const code=document.querySelector('#code').value.trim();const name=document.querySelector('#name').value.trim()||'Mobile device';const msg=document.querySelector('#message');try{const r=await fetch(host+'/api/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,device_name:name})});const data=await r.json();if(!r.ok)throw new Error(data.detail||'Pairing failed');localStorage.setItem('pc_controller_token',data.token);localStorage.setItem('pc_controller_host',host);location.href=host+'/';}catch(e){msg.textContent=e.message+' — check that both devices are on the same Wi-Fi.'}};
+</script></body></html>
