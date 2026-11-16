@@ -1,103 +1,84 @@
+# PC Controller
 
-# 🖥️ PC Remote Control
+**PC Controller** is a Windows desktop agent with a local-network remote-control client for phones, tablets and other browsers. It is designed to work over the same private Wi-Fi/LAN without a cloud account.
 
-**PC Remote Control** is a lightweight desktop application built with Python and FastAPI that allows you to control your Windows PC effortlessly from your smartphone over a local Wi-Fi network.
+> This branch introduces the LAN pairing and permission foundation. The native Android APK and signed installer are follow-up deliverables; they are not included in this source change yet.
 
----
+## Current capabilities
 
-## 📸 Interface Preview
+- Windows tray-first desktop agent (notification area beside the clock)
+- One-time six-digit pairing code and QR pairing page
+- UDP LAN discovery beacon on port 9051
+- Paired-device token authentication
+- Desktop-managed permissions and device revocation
+- Existing responsive dashboard for mobile browsers
+- Media, volume and brightness controls
+- Optional screen capture, mouse click and restricted keyboard input APIs
+- Desktop shortcut and power controls remain disabled until explicitly enabled
 
-<div align="center">
-  <img src="docs/UI.jpg" alt="PC Remote Control Dashboard Preview" width="100%" />
-</div>
+## Run on Windows
 
----
+Python 3.10+ is recommended.
 
-## ✨ Features
-
-* **📱 Instant QR Code Pairing:** Scan the generated QR code on application startup to access the dashboard instantly from your mobile device.
-* **🔊 Audio & Brightness Control:** Adjust Windows master volume and monitor brightness in real-time.
-* **🎵 Media Controls:** Play, pause, skip tracks, and view album art/cover status for Spotify, YouTube, and system media players.
-* **🚀 Process & App Launcher:** Launch configured applications or manage background processes remotely.
-* **🌙 Dark Mode UI:** Modern, fast, and fully responsive web interface designed for all mobile devices.
-
----
-
-## 🚀 Quick Start for Windows (No Setup Required)
-
-You do not need Python or any dependencies installed on your computer:
-
-1. Download **`PCRemoteControl.exe`** from the [Releases](../../releases) section.
-2. Double-click the `.exe` file to launch the control window.
-3. Scan the displayed **QR Code** with your smartphone camera or open the printed local URL.
-
-> **Note:** If Windows SmartScreen displays a warning, click **More info** ➔ **Run anyway**.
-
----
-
-## 🛠️ For Developers (Running from Source Code)
-
-If you want to modify or rebuild the project locally:
-
-### 1. Clone the repository
-```bash
+```powershell
 git clone https://github.com/RuslanSharifov/pc-controller.git
 cd pc-controller
-
-```
-
-### 2. Set up virtual environment
-
-```bash
 python -m venv .venv
-call .venv\Scripts\activate.bat
-
-```
-
-### 3. Install dependencies
-
-```bash
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
+python desktop_agent.py
 ```
 
-### 4. Run the application
+The agent runs in the Windows notification area. Right-click its icon and select **Pair a device** to display the QR code and one-time code.
 
-```bash
-python gui_launcher.py
+## Connect a phone
 
+1. Connect the phone and PC to the same private Wi-Fi network.
+2. On the PC, open the tray menu and choose **Pair a device**.
+3. Scan the QR code. If scanning is unavailable, open `http://<PC-IP>:9050/static/connect.html` and enter the code.
+4. After pairing, the phone opens the existing dashboard.
+
+For local browser access on the PC, open `http://127.0.0.1:9050`.
+
+## Desktop permissions
+
+Open `http://127.0.0.1:9050/static/desktop.html` on the PC to:
+
+- enable or disable media, volume and brightness controls;
+- allow selected applications;
+- separately enable desktop shortcuts, screen lock, screen viewing, mouse/keyboard input and power operations;
+- revoke a previously paired device.
+
+Only explicitly enabled remote actions are accepted by the API. New high-impact actions are disabled by default.
+
+## Build a Windows executable
+
+```powershell
+pyinstaller --noconfirm gui_launcher.spec
 ```
 
----
+The output is written to `dist/PCController.exe`. A signed installer and automatic uninstall cleanup still need to be added before a public production release.
 
-## 📦 Rebuilding the Executable (PyInstaller)
+## Network and security
 
-To compile the project into a single executable `.exe` file after making changes:
+- HTTP API: TCP 9050
+- Discovery beacon: UDP 9051
+- Allow the application through Windows Defender Firewall on **Private networks** only.
+- Guest Wi-Fi isolation, VPNs and VLAN/client isolation can block discovery.
+- The initial LAN transport uses HTTP. Do not expose it to the public internet or configure router port forwarding. TLS certificate provisioning and pinning are required before claiming encrypted transport.
 
-```cmd
-rmdir /s /q build dist
-pyinstaller --noconsole --onefile --icon=icon.ico --add-data "static;static" --add-data "templates;templates" --hidden-import=webview --hidden-import=uvicorn --hidden-import=qrcode --hidden-import=PIL --hidden-import=qrcode.image.pil gui_launcher.py
+See [docs/SECURITY_AND_PAIRING.md](docs/SECURITY_AND_PAIRING.md).
 
-```
+## Project structure
 
----
+- `app.py` — existing FastAPI controls and Windows integrations
+- `remote_access.py` — pairing, LAN discovery, permissions and remote input
+- `desktop_agent.py` — Windows tray launcher
+- `templates/` — shared remote dashboard
+- `static/` — web client, connection page and desktop settings
+- `desktop/README.md` — desktop agent notes
+- `mobile/README.md` — mobile client notes
 
-## 🛠️ Tech Stack
+## License
 
-* **Backend:** Python 3, FastAPI, Uvicorn, Pycaw, WinRT / WinSDK
-* **GUI / Launcher:** PyWebView, PyQRCode, Pillow
-* **Frontend:** HTML5, Modern CSS (Glassmorphism / Dark Slate), JavaScript (Fetch API)
-
----
-
-Developed with ❤️ by **Ruslan**
-
-```
-
----
-
-### Skrinşotu Layihəyə Əlavə Etmək Üçün:
-1. Layihə qovluğunda **`docs`** adlı yeni papka açın.
-2. İnterfeysin 16:9 ölçüdə (məsələn, 1280x720) çəkilmiş şəklini **`preview.png`** adı ilə həmin papkaya atın (`docs/preview.png`).
-
-```
+MIT. See [LICENSE](LICENSE).
