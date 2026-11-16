@@ -10,7 +10,6 @@ on:
       - "requirements.txt"
       - "gui_launcher.spec"
       - "installer/**"
-      - "installer/**"
       - ".github/workflows/windows-desktop.yml"
   pull_request:
     paths:
