@@ -15,9 +15,8 @@ from PIL import Image, ImageDraw
 
 from app import app
 from fastapi import HTTPException, Request
-from remote_access import PORT, get_pairing_info, install_remote_access
+from remote_access import PORT, get_pairing_info
 
-install_remote_access(app)
 
 
 def run_server() -> None:
@@ -60,7 +59,7 @@ def exit_app(icon, item) -> None:
     icon.stop()
 
 
-if __name__ == "__main__":
+def run_tray() -> None:
     threading.Thread(target=run_server, name="pc-controller-api", daemon=True).start()
     tray = pystray.Icon(
         "PC Controller",
@@ -74,3 +73,7 @@ if __name__ == "__main__":
         ),
     )
     tray.run()
+
+
+if __name__ == "__main__":
+    run_tray()
