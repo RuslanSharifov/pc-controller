@@ -35,8 +35,15 @@ jobs:
         run: python -m compileall -q app.py remote_access.py desktop_agent.py
       - name: Build portable desktop executable
         run: pyinstaller --noconfirm gui_launcher.spec
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Build Windows installer
+        shell: pwsh
+        run: '& "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe" installer/PCController.iss'
       - uses: actions/upload-artifact@v4
         with:
-          name: pc-controller-windows-portable
-          path: dist/PCController.exe
+          name: pc-controller-windows-builds
+          path: |
+            dist/PCController.exe
+            dist/installer/PCController-Setup.exe
           if-no-files-found: error
