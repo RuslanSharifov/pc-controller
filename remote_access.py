@@ -107,8 +107,16 @@ def get_pairing_info() -> dict[str, str]:
     }
 
 
+def get_public_capabilities() -> dict[str, Any]:
+    with _LOCK:
+        return {
+            "apps": list(_PERMISSIONS.get("apps", [])),
+            "permissions": {key: bool(value) for key, value in _PERMISSIONS.items() if key != "apps"},
+        }
+
+
 def _permission_for(path: str) -> tuple[str | None, str | None]:
-    if path == "/api/status":
+    if path in {"/api/status", "/api/capabilities"}:
         return "status", None
     if path.startswith("/api/media/"):
         return "media", None
@@ -165,6 +173,10 @@ def install_remote_access(app) -> None:
         if not allowed:
             return JSONResponse({"detail": "This action is disabled in desktop permissions"}, status_code=403)
         return await call_next(request)
+
+    @app.get("/api/capabilities")
+    async def capabilities():
+        return get_public_capabilities()
 
     @app.get("/api/pair/info")
     async def pair_info(request: Request):
