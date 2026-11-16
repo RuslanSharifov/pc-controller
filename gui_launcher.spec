@@ -1,12 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+from PyInstaller.utils.hooks import collect_submodules
 
 a = Analysis(
-    ['gui_launcher.py'],
+    ['desktop_agent.py'],
     pathex=[],
     binaries=[],
     datas=[('static', 'static'), ('templates', 'templates')],
-    hiddenimports=['webview', 'uvicorn', 'qrcode', 'PIL', 'qrcode.image.pil'],
+    hiddenimports=[
+        'webview', 'uvicorn', 'qrcode', 'qrcode.image.pil', 'PIL',
+        'pystray', 'pystray._win32', 'comtypes',
+    ] + collect_submodules('pystray'),
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -15,14 +18,9 @@ a = Analysis(
     optimize=0,
 )
 pyz = PYZ(a.pure)
-
 exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.datas,
-    [],
-    name='gui_launcher',
+    pyz, a.scripts, a.binaries, a.datas, [],
+    name='PCController',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
