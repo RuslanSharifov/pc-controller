@@ -165,8 +165,8 @@ function switchInfoTab(tabName, btnEvent) {
 
 async function fetchGitHubData() {
     try {
-        // Profil Dataları (Ruaaln)
-        const userRes = await fetch("https://api.github.com/users/Ruaaln");
+        // Profil Dataları (RuslanSharifov)
+        const userRes = await fetch("https://api.github.com/users/RuslanSharifov");
         if (userRes.ok) {
             const user = await userRes.json();
             document.getElementById("ghAvatar").src = user.avatar_url;
@@ -176,7 +176,7 @@ async function fetchGitHubData() {
         }
 
         // Repo Dataları (pc-controller)
-        const repoRes = await fetch("https://api.github.com/repos/Ruaaln/pc-controller");
+        const repoRes = await fetch("https://api.github.com/repos/RuslanSharifov/pc-controller");
         if (repoRes.ok) {
             const repo = await repoRes.json();
             document.getElementById("repoName").textContent = repo.name;
