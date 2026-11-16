@@ -10,11 +10,11 @@ from io import BytesIO
 
 import qrcode
 import uvicorn
-import webview
 import pystray
 from PIL import Image, ImageDraw
 
 from app import app
+from fastapi import HTTPException, Request
 from remote_access import PORT, get_pairing_info, install_remote_access
 
 install_remote_access(app)
@@ -33,25 +33,23 @@ def tray_image() -> Image.Image:
 
 
 def show_pairing(icon, item) -> None:
-    info = get_pairing_info()
-    qr = qrcode.make(f"{info['url']}/static/connect.html?host={info['host']}&port={PORT}&code={info['pairing_code']}")
-    buffer = BytesIO()
-    qr.save(buffer, format="PNG")
+    webbrowser.open(f"http://127.0.0.1:{PORT}/static/desktop.html")
+
+
+@app.get("/api/local/qr")
+async def local_pairing_qr(request: Request):
+    if not request.client or request.client.host not in {"127.0.0.1", "::1", "localhost"}:
+        raise HTTPException(status_code=403, detail="Local desktop access required")
     import base64
+    import qrcode
+    from io import BytesIO
+    info = get_pairing_info()
+    target = f"{info['url']}/static/connect.html?host={info['host']}&port={PORT}&code={info['pairing_code']}"
+    image = qrcode.make(target)
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
-    html = f"""<!doctype html><html><head><meta charset="utf-8"><style>
-    body{{font-family:Segoe UI,sans-serif;background:#0f172a;color:#f8fafc;display:grid;place-items:center;height:100vh;margin:0}}
-    main{{background:#1e293b;border:1px solid #334155;border-radius:18px;padding:24px;text-align:center;width:330px}}
-    img{{width:210px;height:210px;background:white;padding:8px;border-radius:12px}}
-    code{{display:block;font-size:28px;letter-spacing:7px;color:#4ade80;margin:14px}}
-    small{{color:#94a3b8}}a{{color:#38bdf8}}
-    </style></head><body><main><h2>PC Controller</h2>
-    <p>Scan this QR code or enter the pairing code in your phone</p>
-    <img src="data:image/png;base64,{encoded}"><code>{info['pairing_code']}</code>
-    <small>{info['url']}</small><p><small>Only pair devices you trust. The code changes when the desktop agent restarts.</small></p>
-    </main></body></html>"""
-    webview.create_window("PC Controller · Pair device", html=html, width=410, height=560, resizable=False)
-    webview.start()
+    return {"image": "data:image/png;base64," + encoded}
 
 
 def open_dashboard(icon, item) -> None:
