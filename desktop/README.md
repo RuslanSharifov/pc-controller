@@ -22,4 +22,4 @@ Desktop permissions are managed at `http://127.0.0.1:9050/static/desktop.html`.
 
 ## Packaging
 
-The PyInstaller spec is `gui_launcher.spec`. It builds the tray-first `desktop_agent.py` entry point. Installer generation and signed Windows releases are tracked as a follow-up packaging milestone.
+The PyInstaller spec is `gui_launcher.spec` and builds the tray-first `desktop_agent.py` entry point. The Inno Setup script at `installer/PCController.iss` creates a per-user installer with optional sign-in startup and clean uninstall. The current installer is unsigned.
