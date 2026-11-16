@@ -24,6 +24,7 @@ ArchitecturesInstallIn64BitMode=x64
 
 [Tasks]
 Name: "autostart"; Description: "Start PC Controller when I sign in to Windows"; Flags: unchecked
+Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 
 [Files]
 Source: "..\dist\PCController.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -33,8 +34,6 @@ Name: "{group}\PC Controller"; Filename: "{app}\{#MyAppExeName}"
 Name: "{userdesktop}\PC Controller"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userstartup}\PC Controller"; Filename: "{app}\{#MyAppExeName}"; Tasks: autostart
 
-[Tasks]
-Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch PC Controller"; Flags: nowait postinstall skipifsilent
