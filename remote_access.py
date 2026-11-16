@@ -116,7 +116,7 @@ def get_public_capabilities() -> dict[str, Any]:
 
 
 def _permission_for(path: str) -> tuple[str | None, str | None]:
-    if path in {"/api/status", "/api/capabilities"}:
+    if path == "/api/status":
         return "status", None
     if path.startswith("/api/media/"):
         return "media", None
@@ -162,6 +162,13 @@ def install_remote_access(app) -> None:
 
         auth = request.headers.get("authorization", "")
         token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+        if path == "/api/capabilities":
+            with _LOCK:
+                paired = bool(token and _DEVICES.get(_digest(token)))
+            if not paired:
+                return JSONResponse({"detail": "Pair this device before viewing PC capabilities"}, status_code=401)
+            return await call_next(request)
+
         with _LOCK:
             device = _DEVICES.get(_digest(token)) if token else None
             permission, app_id = _permission_for(path)
